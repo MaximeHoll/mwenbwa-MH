@@ -1,7 +1,7 @@
 const User = require('../models/User')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
-const { body } = require('express-validator')
+const Tree = require('../models/Tree')
 
 //@desc Get all users
 //@route GET /users
@@ -18,27 +18,26 @@ const getAllUsers = asyncHandler(async (req,res) => {
 //@route POST /profile
 //@access Private
 const getUser = asyncHandler(async (req,res) => {
-    const { user_id, profile_id } = req.body
+    const { user_id} = req.body
 
 
-    const profile = await Profile.findById(profile_id ).select('-password').exec()
     const user = await User.findById(user_id ).select('-password').exec()
 
 
     if(!user){
         return res.status(400).json({message: 'No user found'})
     }
-    res.json({user, profile})
+    res.json({user})
 })
 
 //@desc Create user
 //@route POST /users
 //@access Private
 const createNewUser = asyncHandler(async (req,res) => {
-    const { email, password, firstName, lastName, address } = req.body
+    const { email, password, username, color } = req.body
     console.log(req)
     //Confirm data
-    if(!email || !password) {
+    if(!email || !password || !username || !color) {
         return res.status(400).json( {message: 'All fields are required.'})
     }
 
@@ -54,7 +53,21 @@ const createNewUser = asyncHandler(async (req,res) => {
 
     const hashedPwd = await bcrypt.hash(password, 10)
 
-    const userObject = { email, "password" : hashedPwd }
+    const allUsers = await User.find().select('-password').lean()
+
+    const totalUsers = allUsers.length + 1
+
+    let totalLeaves = []
+
+    for(let i = 0; i < allUsers.length; i++) {
+        totalLeaves.push(allUsers[i].leaves)
+    }
+
+    const bonusLeaves = (totalLeaves.reduce(function(a, b){
+        return a + b;
+    }))/totalUsers
+
+    const userObject = { email, "password" : hashedPwd, username, color, "leaves": bonusLeaves }
 
     
 
@@ -62,16 +75,9 @@ const createNewUser = asyncHandler(async (req,res) => {
 
     const user = await User.create(userObject)
 
-    const getUserID = await User.findOne({email}).lean().exec()
 
-    const user_id= getUserID._id
-
-    const profileObject = { user_id, "first_name": firstName, "last_name":lastName, address }
-
-    const profile = await Profile.create(profileObject)
-
-    if(user && profile) {
-        res.status(201).json({ message: `New user created` })
+    if(user) {
+        res.status(201).json({ message: `New user created with ID ${user._id}` })
     } else {
         res.status(400).json({message: 'Invalid data received'})
     }

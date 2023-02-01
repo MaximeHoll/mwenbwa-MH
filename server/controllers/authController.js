@@ -19,25 +19,23 @@ const login = asyncHandler(async (req,res) => {
     }
 
     const foundUser = await User.findOne({email}).exec()
-    const user_id = foundUser._id
-    const foundProfile = await Profile.findOne({ user_id }).exec()
+    
 
     if(!foundUser) {
-        return res.status(401).json({message: 'Unauthorized'})
+        return res.status(401).json({message: 'User not found'})
     }
 
     const match = await bcrypt.compare(password, foundUser.password)
 
-    if (!match) return res.status(401).json({message: 'Unauthorized'})
+    if (!match) return res.status(401).json({message: 'Password does not match'})
 
-    console.log(foundUser.email, foundUser._id, foundUser.role)
+    
 
     const accessToken = jwt.sign(
         {
             "UserInfo": {
-                "profile_id": foundProfile._id,
                 "id": foundUser._id,
-                "role": foundUser.role || "user"
+                "admin": foundUser.admin
             }
         },
         process.env.ACCESS_TOKEN_SECRET,
@@ -45,7 +43,7 @@ const login = asyncHandler(async (req,res) => {
     )
 
     const refreshToken = jwt.sign(
-        { "UserInfo": {"id": foundUser._id, "profile_id": foundProfile._id, "role": foundUser.role || "user"}},
+        { "UserInfo": {"id": foundUser._id, "admin": foundUser.admin}},
         process.env.REFRESH_TOKEN_SECRET,
         { expiresIn: '7d' }
     )
@@ -81,8 +79,7 @@ const refresh = (req,res) => {
             if (err) return res.status(403).json({message: 'Forbidden'})
 
             const foundUser = await User.findOne({username: decoded.username}).exec()
-            const user_id = foundUser._id
-            const foundProfile = await Profile.findOne({ user_id }).exec()
+            
 
             if(!foundUser) {
                 return res.status(401).json({message: 'Unauthorized'})
@@ -91,9 +88,8 @@ const refresh = (req,res) => {
             const accessToken = jwt.sign(
                 {
                     "UserInfo": {
-                        "profile_id": foundProfile._id,
                         "id": foundUser._id,
-                        "role": foundUser.role || "user"
+                        "admin": foundUser.admin
                     }
                 },
                 process.env.ACCESS_TOKEN_SECRET,

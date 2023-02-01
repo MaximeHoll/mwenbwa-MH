@@ -19,7 +19,6 @@ const verifyJWT = (req,res,next) => {
         (err, decoded) => {
             if (err) return res.status(403).json({ message: `${err}` })
             req.user = decoded.UserInfo.email
-            req.roles = decoded.UserInfo.role
             next()
         }
     )
@@ -48,8 +47,7 @@ const verifyJWTAdmin = (req,res,next) => {
         (err, decoded) => {
             if (err) return res.status(403).json({ message: `${err}` })
             req.user = decoded.UserInfo.email
-            req.roles = decoded.UserInfo.role
-            if (req.roles != "admin") return res.status(403).json({ message: 'Admin access only.' })
+            if (req.admin != true) return res.status(403).json({ message: 'Admin access only.' })
             next()
         }
     )
