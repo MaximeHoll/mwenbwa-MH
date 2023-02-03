@@ -1,13 +1,12 @@
 const User = require('../models/User')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
-const Tree = require('../models/Tree')
 
-//@desc Get all users
+//@desc Get all users byt leaves (leaderboard)
 //@route GET /users
 //@access Private
 const getAllUsers = asyncHandler(async (req,res) => {
-    const users = await User.find().select('-password').lean()
+    const users = await User.find().sort({"leaves": -1}).select('-password').lean()
     if(!users?.length){
         return res.status(400).json({message: 'No user found'})
     }

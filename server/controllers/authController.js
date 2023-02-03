@@ -49,7 +49,7 @@ const login = asyncHandler(async (req,res) => {
     )
 
     //create a secure cookie with refresh token
-    res.cookie('openlake', refreshToken, {
+    res.cookie('monbois', refreshToken, {
         httpOnly: true,
         secure: true,
         sameSite: 'None', 

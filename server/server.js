@@ -38,6 +38,8 @@ app.use('/', require('./routes/root'))
 app.use('/users', require('./routes/userRoutes'))
 app.use('/auth', require('./routes/authRoutes'))
 app.use('/trees', require('./routes/treesRoutes'))
+app.use('/activities', require('./routes/activitiesRoutes'))
+
 
 
 
