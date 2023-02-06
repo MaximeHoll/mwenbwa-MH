@@ -24,7 +24,7 @@ const assignTrees = asyncHandler(async (req,res) => {
     for(let i = 0; i < userTrees.length; i++) {
         userTrees[i].user_id = user_id
         const assignedTree = await userTrees[i].save()
-        const activity = await Activity.create({"type": "assigned", user_id, "tree_id": userTrees[i]._id })
+        const activity = await Activity.create({"type": "received", user_id, "tree_id": userTrees[i]._id })
         assignedTrees.push(assignedTree)
     }
 

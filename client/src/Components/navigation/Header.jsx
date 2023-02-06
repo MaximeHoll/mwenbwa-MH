@@ -17,7 +17,7 @@ export default function Header() {
         <Link to={'/'}>
           
         </Link>
-        <WebsiteName>mwenbwa</WebsiteName>
+        <WebsiteName>monbois</WebsiteName>
       </Logo>
       <NavMenuBar onClick={() => setNavActive(!navActive)}>
         <div></div>

@@ -15,6 +15,9 @@ const activitySchema = new mongoose.Schema({
     type: {
         type: String,
         required: true,
+    },
+    leaves: {
+        type: Number,
     }
 },
 {timestamps: true}

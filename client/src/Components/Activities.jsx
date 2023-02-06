@@ -3,21 +3,21 @@ import axios from 'axios';
 
 
 
-function Leaderboard(){
+function Activities(){
 
   const url = 'http://localhost:3500/'
 
   const [board, setBoard] = useState([])
 
-  const getLeaderBoard = async() => {
-    const newBoard = await axios.get(url + `users`)
+  const getActivities = async() => {
+    const newBoard = await axios.get(url + `activities`)
     setBoard(newBoard.data)
     
   }
 
 
   useEffect(() => {
-    getLeaderBoard()
+    getActivities()
   }, [])
 
 
@@ -25,7 +25,7 @@ function Leaderboard(){
     return (
       board.map((boardElement, index) => (
         
-          <li key={index}>{index + 1}. {boardElement.username} with {boardElement.leaves} leaves.</li>
+        <li key={index}>{boardElement[3]} {boardElement[0]} {boardElement[2]} {boardElement[1]}.</li>
         
       )
       
@@ -34,4 +34,4 @@ function Leaderboard(){
 
 }
 
-export default Leaderboard;
+export default Activities;
