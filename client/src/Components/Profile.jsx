@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 
 
@@ -7,27 +8,26 @@ function Profile(){
 
   const url = 'http://localhost:3500/'
 
-  const [board, setBoard] = useState([])
+  const {
+    authUser,
+    isLoggedIn,
+} = useAuth()
 
-  const getActivities = async() => {
-    const newBoard = await axios.get(url + `activities`)
-    setBoard(newBoard.data)
+  
+  // const getActivities = async() => {
+  //   const newBoard = await axios.get(url + `activities`)
+  //   setBoard(newBoard.data)
     
-  }
+  // }
 
-
-  useEffect(() => {
-    getActivities()
-  }, [])
 
 
 
     return (
       <div>
-        <li>Username: </li>
-        <li>Email: </li>
-        <li>Leaves: </li>
-        <li>Color: </li>
+        <li>Username: {authUser.username}</li>
+        <li>Leaves: {authUser.leaves}</li>
+        <li>Color: {authUser.color}</li>
       </div>
     );
 

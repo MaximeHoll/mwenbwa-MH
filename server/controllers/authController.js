@@ -12,13 +12,13 @@ const jwt_decode = require("jwt-decode")
 //@access Public
 
 const login = asyncHandler(async (req,res) => {
-    const { email, password } = req.body
+    const { username, password } = req.body
 
-    if(!email || !password){
+    if(!username || !password){
         return res.status(400).json({ message: 'All fields are required'})
     }
 
-    const foundUser = await User.findOne({email}).exec()
+    const foundUser = await User.findOne({username}).exec()
     
 
     if(!foundUser) {
@@ -58,7 +58,7 @@ const login = asyncHandler(async (req,res) => {
 
     data = jwt_decode(accessToken)
 
-    res.json({ data })
+    res.json({username: foundUser.username, color: foundUser.color, leaves: foundUser.leaves, admin: foundUser.admin, id: foundUser._id})
 })
 
 //@desc Refresh

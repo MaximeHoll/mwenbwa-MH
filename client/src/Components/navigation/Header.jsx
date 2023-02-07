@@ -1,6 +1,7 @@
-import { Router, Link } from '@reach/router';
+import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 
 export default function Header() {
@@ -8,8 +9,16 @@ export default function Header() {
     { text: 'Explore', href: '/explore' },
     { text: 'Connect', href: '/user/login' },
   ];
-  const [profileId, setProfileId] = useState("")
+  
   const [navActive, setNavActive] = useState(null)
+
+
+  const {
+    authUser,
+    setAuthUser,
+    isLoggedIn,
+    setIsLoggedIn
+} = useAuth()
 
   return (
     <Nav>
@@ -17,7 +26,7 @@ export default function Header() {
         <Link to={'/'}>
           
         </Link>
-        <WebsiteName>monbois</WebsiteName>
+        <WebsiteName><Link to={'/'}>monbois</Link></WebsiteName>
       </Logo>
       <NavMenuBar onClick={() => setNavActive(!navActive)}>
         <div></div>
@@ -27,18 +36,42 @@ export default function Header() {
       <NavMenuElements
         className={`${navActive ? 'active' : ''} nav__menu-list`}
       >
-        {profileId ? (
+        {isLoggedIn ? (
+          <div>
           <NavItems>
-            <a href={'/user/profile'} className={'nav__link'}>
+            <Link to={'/user/profile'} className={'nav__link'}>
               Profile
-            </a>
+            </Link>
           </NavItems>
-        ) : (
           <NavItems>
-            <a href={'/user/login'} className={'nav__link'}>
+          <Link to={'/leaderboard'} className={'nav__link'}>
+            Leaderboard
+          </Link>
+        </NavItems>
+        <NavItems>
+          <Link to={'/activities'} className={'nav__link'}>
+            Activities
+          </Link>
+        </NavItems>
+        </div>
+        ) : (
+          <div>
+          <NavItems>
+            <Link to={'/user/login'} className={'nav__link'}>
               Connect
-            </a>
+            </Link>
           </NavItems>
+          <NavItems>
+            <Link to={'/leaderboard'} className={'nav__link'}>
+              Leaderboard
+            </Link>
+          </NavItems>
+          <NavItems>
+            <Link to={'/activities'} className={'nav__link'}>
+              Activities
+            </Link>
+          </NavItems>
+      </div>
         )}
 
         <ContainerTheme className={'theme'}>
