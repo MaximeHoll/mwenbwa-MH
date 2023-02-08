@@ -1,33 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from "react-router-dom";
 
 
 
 function Profile(){
 
-  const url = 'http://localhost:3500/'
+  const [profile, setProfile] = useState({})
+  const navigate = useNavigate()
+
+
 
   const {
-    authUser,
-    isLoggedIn,
+    user,
+    logout
 } = useAuth()
 
   
-  // const getActivities = async() => {
-  //   const newBoard = await axios.get(url + `activities`)
-  //   setBoard(newBoard.data)
-    
-  // }
+const configuration = {
+  method: 'post',
+  url: 'http://localhost:3500/users/profile',
+  data: {
+    user_id: user
+  },
+  withCredentials: true,
+};
 
+const getProfile = async(e) => {
+  axios(configuration)
+  .then((result) => {
+      setProfile(result.data.user)
+  })
+  .catch((error) => {
+    error = new Error();
+  });
+}
 
+useEffect(() => {
+  getProfile()
+}, [])
 
 
     return (
       <div>
-        <li>Username: {authUser.username}</li>
-        <li>Leaves: {authUser.leaves}</li>
-        <li>Color: {authUser.color}</li>
+        <li>Username: {profile.username}</li>
+        <li>Leaves: {profile.leaves}</li>
+        <li>Color: {profile.color}</li>
+        <br />
+        <button onClick={() => logout()}>Logout</button>
       </div>
     );
 

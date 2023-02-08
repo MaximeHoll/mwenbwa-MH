@@ -14,10 +14,7 @@ export default function Header() {
 
 
   const {
-    authUser,
-    setAuthUser,
-    isLoggedIn,
-    setIsLoggedIn
+    user
 } = useAuth()
 
   return (
@@ -36,7 +33,7 @@ export default function Header() {
       <NavMenuElements
         className={`${navActive ? 'active' : ''} nav__menu-list`}
       >
-        {isLoggedIn ? (
+        {user ? (
           <div>
           <NavItems>
             <Link to={'/user/profile'} className={'nav__link'}>

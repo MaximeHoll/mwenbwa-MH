@@ -10,28 +10,32 @@ import Activities from './components/Activities.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './pages/login'
 import Profile from './components/Profile'
+import Map from './components/Map'
 
 function App() {
 
 
   return (
+    <Router>
     <AuthProvider>
     <div className="App">
       
       
-        <Router>
+        
         <Header></Header>
           <Routes>
+              <Route exact path='/' element={<Map />} />
               <Route exact path='/leaderboard' element={<Leaderboard />} />
               <Route exact path='/activities' element={<Activities />} />
               <Route exact path='/user/login' element={<Login />} />
               <Route exact path='/user/profile' element={<Profile />} />
           </Routes>
-        </Router>
+        
       
       <Footer></Footer>
     </div>
     </AuthProvider>
+    </Router>
   )
 }
 

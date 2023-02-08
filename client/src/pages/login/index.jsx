@@ -14,9 +14,9 @@ function Login(props) {
     const [password, setPassword] = useState("")
 
     const {
-        authUser,
-        isLoggedIn,
-        dispatch
+      user,
+      login,
+      logout
     } = useAuth()
 
     const configuration = {
@@ -33,8 +33,7 @@ function Login(props) {
         e.preventDefault()
         axios(configuration)
         .then((result) => {
-            dispatch({type:'LOGIN', payload: result.data})
-            console.log(authUser, isLoggedIn, result.data)
+            login(result.data.id)
         })
         .catch((error) => {
           error = new Error();
