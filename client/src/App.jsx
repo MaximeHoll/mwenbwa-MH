@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './pages/login'
 import Profile from './components/Profile'
 import Map from './components/Map'
+import SingleTree from './components/SingleTree'
 
 function App() {
 
@@ -29,6 +30,7 @@ function App() {
               <Route exact path='/activities' element={<Activities />} />
               <Route exact path='/user/login' element={<Login />} />
               <Route exact path='/user/profile' element={<Profile />} />
+              <Route exact path='/singleTree/:id' element={<SingleTree />} />
           </Routes>
         
       

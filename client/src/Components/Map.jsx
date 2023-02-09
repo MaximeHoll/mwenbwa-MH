@@ -6,8 +6,10 @@ import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import icon from "../assets/Short-tree-01.svg";
 import L from "leaflet";
+import SingleTree from "./SingleTree"
+import {Link} from 'react-router-dom'
 
-export default function Map({ coords, display_name }) {
+export default function Map() {
   const latitude = 50.632557
   const longitude = 5.579666
 
@@ -45,7 +47,7 @@ export default function Map({ coords, display_name }) {
       className="map"
       center={[latitude, longitude]}
       style={{height: 83 + "vh"}}
-      zoom={10}
+      zoom={50}
       scrollWheelZoom={true}
       preferCanvas
     >
@@ -56,12 +58,26 @@ export default function Map({ coords, display_name }) {
       />
       {trees.map((tree, index) => {
         return (
-      <CircleMarker center={{lat: tree.geoloc.lat, lon: tree.geoloc.lon}} key={index}
-      radius={7}>
+      <CircleMarker center={{lat: tree.geoloc.lat, lon: tree.geoloc.lon}} key={index} fillColor='green' color='green'
+      radius={5} opacity={0.8}>
         <Popup>
             
-                    
-        {tree.leaves}
+        {tree.random_name ? tree.random_name : "No name"} 
+        <br></br>
+        {tree.leaves} leaves
+        <br></br>
+        {tree.locked ? "Locked" : (tree.user_id ? 
+          (<div>
+            Owned
+            <br></br>
+            <SingleTree name={tree.random_name} leaves={tree.leaves} id={tree.user_id} locked={tree.locked} available={tree.available} />
+          </div>) : 
+          (<div>
+            Available
+            <br></br>
+            
+          </div>))}
+          <a href={`/singleTree/${tree._id}`}>See Tree</a>
 
         </Popup>  
       </CircleMarker>)
