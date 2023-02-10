@@ -20,6 +20,7 @@ export default function Map() {
 
   const getTrees = async() => {
     const allTrees = await axios.get(url + `trees`)
+    console.log(allTrees.data)
     setTrees(allTrees.data)
   }
 
@@ -62,11 +63,11 @@ export default function Map() {
       radius={5} opacity={0.8}>
         <Popup>
             
-        {tree.random_name ? tree.random_name : "No name"} 
+        {/* {tree.random_name ? tree.random_name : "No name"} 
         <br></br>
         {tree.leaves} leaves
-        <br></br>
-        {tree.locked ? "Locked" : (tree.user_id ? 
+        <br></br> */}
+        {/* {tree.locked ? "Locked" : (tree.user_id ? 
           (<div>
             Owned
             <br></br>
@@ -76,7 +77,7 @@ export default function Map() {
             Available
             <br></br>
             
-          </div>))}
+          </div>))} */}
           <a href={`/singleTree/${tree._id}`}>See Tree</a>
 
         </Popup>  

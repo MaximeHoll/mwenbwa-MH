@@ -60,13 +60,9 @@ const treeSchema = new mongoose.Schema({
         type: Number,
         
     },
-    free: {
+    locked: {
         type: Boolean,
-        default:true
-    },
-    available: {
-        type:Boolean,
-        default:true
+        default:false
     },
     random_name: {
         type: String,

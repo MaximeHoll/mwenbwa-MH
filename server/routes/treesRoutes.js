@@ -5,8 +5,11 @@ const commentsController = require ('../controllers/commentsController')
 const {verifyJWTAdmin, verifyJWT} = require('../middleware/verifyJWT')
 
 
+router.route('/')
+    .get(treesController.getTrees)
 
-
+router.route('/:id')
+    .get(treesController.getSingleTree)
 
 router.route('/register')
     .patch(treesController.assignTrees)

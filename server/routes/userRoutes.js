@@ -10,4 +10,7 @@ router.route('/')
     .patch(usersController.updateUser)
     .delete(verifyJWTAdmin,usersController.deleteUser)
 
+router.route('/profile')
+    .post(usersController.getUser)
+
 module.exports = router

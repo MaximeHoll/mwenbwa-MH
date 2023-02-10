@@ -3,6 +3,7 @@ const Tree = require('../models/Tree')
 const User = require('../models/User')
 const { nameByRace } = require("fantasy-name-generator")
 const Activity = require('../models/Activity')
+const jwt_decode = require("jwt-decode")
 
 
 //@desc Assign 3 trees to newly registered user
@@ -36,8 +37,13 @@ const assignTrees = asyncHandler(async (req,res) => {
 //@access Private
 
 const buyTree = asyncHandler(async (req,res) => {
-    const { user_id } = req.body
+    //for testing purposes
+    // const { user_id } = req.body
     const { tree_id } = req.body
+
+    
+    const data = jwt_decode(req.cookies.monbois)
+    const user_id = data.UserInfo.id
 
     
 
@@ -63,7 +69,7 @@ const buyTree = asyncHandler(async (req,res) => {
 
     if(foundTree.leaves > user.leaves) return res.json({"Message": "Not enough leaves to buy this tree"})
 
-    foundTree.random_name = nameByRace("human")
+    
     foundTree.user_id = user._id
     user.leaves = user.leaves - foundTree.leaves
 
@@ -158,10 +164,14 @@ const buyTree = asyncHandler(async (req,res) => {
 //@access Private
 
 const lockTree = asyncHandler(async (req,res) => {
-    const { user_id } = req.body
+
+    //for testing purposes
+    // const { user_id } = req.body
     const { tree_id } = req.body
 
     
+    const data = jwt_decode(req.cookies.monbois)
+    const user_id = data.UserInfo.id
 
     const user = await User.findById(user_id).select("-password").exec()
 
@@ -244,7 +254,7 @@ const lockTree = asyncHandler(async (req,res) => {
         if(user.leaves < price) return res.json({message: "Not enough leaves to lock this tree"})
 
 
-        foundTree.free = false
+        foundTree.locked = true
         user.leaves = user.leaves - price
 
         const activity = await Activity.create({"type": "locked", user_id, "tree_id": tree_id })
@@ -254,9 +264,178 @@ const lockTree = asyncHandler(async (req,res) => {
         res.json({"Message": `${user.username} locked ${foundTree.random_name} for ${price} leaves. Balance is now ${user.leaves} leaves. Activity ${activity._id}.`})
 })
 
+//@desc Get all trees
+//@route GET /trees
+//@access Private
+
+const getTrees = asyncHandler(async (req,res) => {
+
+    const allTrees = await Tree.find().exec()
+
+    res.json(allTrees)
+
+})
+
+//@desc Get tree by id and price to buy if not available and/or lock if owned
+//@route GET /trees/:id
+//@access Private
+
+const getSingleTree = asyncHandler(async(req,res) => {
+    const tree_id = req.params.id
+    const data = jwt_decode(req.cookies.monbois)
+    const user_id = data.UserInfo.id
+
+
+    const user = await User.findById(user_id).exec()
+
+    const foundTree = await Tree.findById(tree_id).exec()
+
+    
+
+    if(foundTree.user_id && user_id != tree_id) {
+
+
+        let r = 0.1/6371
+
+        let latT = Math.asin(Math.sin(foundTree.geoloc.lat)/Math.cos(r))
+
+        let deltaLon = Math.acos((Math.cos(r) - Math.sin(latT) * Math.sin(foundTree.geoloc.lat)) / (Math.cos(latT)*Math.cos(foundTree.geoloc.lat)))
+
+        let maxLat = foundTree.geoloc.lat + r
+        let minLat = foundTree.geoloc.lat - r
+
+        let maxLon = foundTree.geoloc.lon + deltaLon
+        let minLon = foundTree.geoloc.lon - deltaLon
+
+        const treesInRadius = await Tree.find({"geoloc.lat":{$gte: minLat, $lte: maxLat }, "geoloc.lon": {$gte: minLon, $lte: maxLon } }).exec()
+
+        const playerTreesinRadius = await Tree.find({"geoloc.lat":{$gte: minLat, $lte: maxLat }, "geoloc.lon": {$gte: minLon, $lte: maxLon }, "user_id": foundTree.user_id}).exec()
+
+
+        const arrayPlayerTreesinRadius = []
+
+        for(let i=0; i< playerTreesinRadius.length; i++) {
+            arrayPlayerTreesinRadius.push(playerTreesinRadius[i].leaves)
+        }
+
+        const valuePlayerTreesinRadius = arrayPlayerTreesinRadius.reduce(function(a, b){
+            return a + b;
+        })
+
+        const myTreesinRadius = await Tree.find({"geoloc.lat":{$gte: minLat, $lte: maxLat }, "geoloc.lon": {$gte: minLon, $lte: maxLon }, "user_id": user._id}).exec()
+
+        const arrayMyTreesinRadius = []
+
+        for(let i=0; i< myTreesinRadius.length; i++) {
+            arrayMyTreesinRadius.push(myTreesinRadius[i].leaves)
+        }
+
+        let valueMyTreesinRadius = 0
+
+        if(arrayMyTreesinRadius.length){
+        valueMyTreesinRadius = arrayMyTreesinRadius.reduce(function(a, b){
+            return a + b;
+        })}
+
+        const otherPlayersTreesinRadius = await Tree.find({"geoloc.lat":{$gte: minLat, $lte: maxLat }, "geoloc.lon": {$gte: minLon, $lte: maxLon }, "user_id": {$ne:null}}).exec()
+
+        const arrayOtherPlayersTreesinRadius = []
+
+        for(let i=0; i< otherPlayersTreesinRadius.length; i++) {
+            arrayOtherPlayersTreesinRadius.push(otherPlayersTreesinRadius[i].leaves)
+        }
+
+        const valueOtherPlayersTreesinRadius = arrayOtherPlayersTreesinRadius.reduce(function(a, b){
+            return a + b;
+        })
+
+
+        let buyPrice = foundTree.leaves + (valuePlayerTreesinRadius * (treesInRadius.length / playerTreesinRadius.length)) + valueOtherPlayersTreesinRadius - valueMyTreesinRadius
+
+        res.json({foundTree, buyPrice})
+    }
+
+    if(foundTree.user_id && user_id == tree_id) {
+
+        let r = 0.1/6371
+
+        let latT = Math.asin(Math.sin(foundTree.geoloc.lat)/Math.cos(r))
+
+        let deltaLon = Math.acos((Math.cos(r) - Math.sin(latT) * Math.sin(foundTree.geoloc.lat)) / (Math.cos(latT)*Math.cos(foundTree.geoloc.lat)))
+
+        let maxLat = foundTree.geoloc.lat + r
+        let minLat = foundTree.geoloc.lat - r
+
+        let maxLon = foundTree.geoloc.lon + deltaLon
+        let minLon = foundTree.geoloc.lon - deltaLon
+
+        //value of tree *10
+
+        const treeValue = foundTree.leaves * 10
+
+
+        //value of trees in 100m radius
+
+
+        const treesInRadius = await Tree.find({"geoloc.lat":{$gte: minLat, $lte: maxLat }, "geoloc.lon": {$gte: minLon, $lte: maxLon } }).exec()
+
+
+        const arrayTreesInRadius = []
+
+        for(let i=0; i< treesInRadius.length; i++) {
+            arrayTreesInRadius.push(treesInRadius[i].leaves)
+        }
+
+        const valueTreesinRadius = arrayTreesInRadius.reduce(function(a, b){
+            return a + b;
+        })
+
+        //amount of players in 100m radius
+
+        const arrayOfPlayers = []
+
+        for(let i=0; i< treesInRadius.length; i++) {
+                    if(treesInRadius[i].user_id) {
+                        arrayOfPlayers.push(treesInRadius[i].user_id)
+                    }
+                }
+
+        const amountOfPlayers = arrayOfPlayers.length
+
+        //value of all the player's trees in 100m radius
+
+        const myTreesinRadius = await Tree.find({"geoloc.lat":{$gte: minLat, $lte: maxLat }, "geoloc.lon": {$gte: minLon, $lte: maxLon }, "user_id": user._id}).exec()
+
+        const arrayMyTreesinRadius = []
+
+        for(let i=0; i< myTreesinRadius.length; i++) {
+            arrayMyTreesinRadius.push(myTreesinRadius[i].leaves)
+        }
+
+        const valueMyTreesinRadius = arrayMyTreesinRadius.reduce(function(a, b){
+            return a + b;
+        })
+
+        //calculation of the price to lock
+
+        let lockPrice = treeValue * 10 + (valueTreesinRadius * amountOfPlayers) - (valueMyTreesinRadius / amountOfPlayers)
+
+        res.json({foundTree, lockPrice})
+    }
+
+    else{
+        let price = foundTree.leaves
+        res.json({foundTree, price})
+    }
+    
+    
+
+})
 
 module.exports = {
     assignTrees,
     buyTree,
-    lockTree
+    lockTree,
+    getTrees,
+    getSingleTree
 }
